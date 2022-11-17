@@ -1,4 +1,4 @@
-# Dell Technology Forum Demo
+# Dell Technologies Forum 2022 Demo
 
 ## Parties
 This demo is a collaboration of:
