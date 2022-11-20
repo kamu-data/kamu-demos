@@ -13,6 +13,7 @@ def query_replay(input_file: str) -> Replay:
     json_output = json.loads(subprocess.check_output([
         rattletrap_exe,
         "-i", input_file,
-        "-c"
+        "-c",
+        "--skip-crc",
     ]))
     return Replay.from_json(json_output)

@@ -1,0 +1,71 @@
+---
+kind: DatasetSnapshot
+version: 1
+content:
+  name: matches
+  kind: root
+  metadata:
+    - kind: setPollingSource
+      fetch:
+        kind: filesGlob
+        path: replays/*.replay
+      prepare:
+        - kind: pipe
+          command:
+            - "rattletrap/rattletrap"
+            - "-c"
+            - "--skip-crc"
+        - kind: pipe
+          command:
+            - "jq"
+            - ". | tostring"
+      read:
+        kind: csv
+        header: false
+        quote: '"'
+        escape: '\'
+        schema:
+          - "replay_json STRING"
+      preprocess:
+        kind: sql
+        engine: spark
+        query: |
+          with
+
+          header_json as (
+              select
+                  replay_json,
+                  get_json_object(
+                      replay_json,
+                      '$.header.body.properties.value'
+                  ) as header_json
+              from input
+          ),
+
+          header_raw as (
+              select
+                  replay_json,
+                  from_json(header_json, '
+                      struct<
+                          Id:struct<value:struct<str:string>>,
+                          Date:struct<value:struct<str:string>>,
+                          MapName:struct<value:struct<name:string>>,
+                          TeamSize:struct<value:struct<int:integer>>,
+                          UnfairTeamSize:struct<value:struct<int:integer>>
+                      >
+                  ') as header
+              from header_json
+          )
+                          
+          select
+              cast(unix_timestamp(header.Date.value.str, "yyyy-MM-dd HH-mm-ss") as timestamp) as event_time,
+              header.Id.value.str as match_id,
+              header.MapName.value.name as map_name,
+              header.TeamSize.value.int as team_size,
+              header.UnfairTeamSize.value.int as unfair_team_size,
+              replay_json
+          from header_raw
+      merge:
+        kind: ledger
+        primaryKey:
+          - match_id
