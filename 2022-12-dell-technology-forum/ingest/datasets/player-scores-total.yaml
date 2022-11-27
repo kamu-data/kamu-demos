@@ -1,0 +1,29 @@
+---
+kind: DatasetSnapshot
+version: 1
+content:
+  name: player-scores-total
+  kind: derivative
+  metadata:
+    - kind: setTransform
+      inputs:
+        - name: player-scores
+      transform:
+        kind: sql
+        engine: flink
+        query: |
+          select
+            `event_time`,
+            `name`,
+            sum(`score`) over (partition by `name` order by `event_time` asc) AS `score_total`,
+            max(`score`) over (partition by `name` order by `event_time` asc) AS `score_top`,
+            sum(`goals`) over (partition by `name` order by `event_time` asc) AS `goals_total`,
+            max(`goals`) over (partition by `name` order by `event_time` asc) AS `goals_top`,
+            sum(`assists`) over (partition by `name` order by `event_time` asc) AS `assists_total`,
+            max(`assists`) over (partition by `name` order by `event_time` asc) AS `assists_top`,
+            sum(`shots`) over (partition by `name` order by `event_time` asc) AS `shots_total`,
+            max(`shots`) over (partition by `name` order by `event_time` asc) AS `shots_top`,
+            sum(`saves`) over (partition by `name` order by `event_time` asc) AS `saves_total`,
+            max(`saves`) over (partition by `name` order by `event_time` asc) AS `saves_top`
+          from `player-scores`
+          where `is_bot` = 0
