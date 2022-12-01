@@ -52,7 +52,7 @@ ingest-loop:
 # Frontend
 #########################################################################################
 
-init-frontend-lsf:
+init-frontend-lfs:
 	@cd frontend && \
 		rm -rf .kamu && \
 		kamu init && \
@@ -87,7 +87,7 @@ clean-ipfs:
 	ipfs key list | grep rl-demo | xargs --no-run-if-empty ipfs key rm
 
 	@# Clean up pins
-	ipfs pin ls -t recursive -q | xargs --no-run-if-empty ipfs pin rm
+	@# ipfs pin ls -t recursive -q | xargs --no-run-if-empty ipfs pin rm
 
 
 clean-replays:

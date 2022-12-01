@@ -81,3 +81,12 @@ kamu notebook
 ```
 
 Pick and execute individual notebooks.
+
+
+### Cleaning up
+To clean the whole workspace up you can run:
+```bash
+make clean-all
+```
+
+This will remove all replays, all IPFS demo keys, and kamu workspaces
