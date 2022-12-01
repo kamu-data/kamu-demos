@@ -5,6 +5,7 @@ IPNS_KEY__MATCHES=k51qzi5uqu5di9hgwaga2xcyxnu5cfhfldt1hpmhsq4e9up0vjx5ifo0uenfbn
 IPNS_KEY__PLAYER_SCORES=k51qzi5uqu5dkp2iz01edud63wkn7ho00km4i8olenjciz2holb2q6j7b6ervv
 IPNS_KEY__PLAYER_SCORES_TOTAL=k51qzi5uqu5dkkzjw4zw4khrnbv7r5wx4tbrlh258zsb2xhhsnzcksqcxsupo1
 
+IMAGE_JUPYTER=$(shell make -s -C images/ jupyter-version)
 
 #########################################################################################
 # Ingest
@@ -67,6 +68,7 @@ init-frontend:
 		rm -rf .kamu && \
 		kamu init && \
 		kamu config set protocol.ipfs.httpGateway "$(IPFS_HTTP_GATEWAY)" && \
+		kamu config set frontend.jupyter.image "$(IMAGE_JUPYTER)" && \
 		kamu pull "ipns://$(IPNS_KEY__MATCHES)" --as matches && \
 		kamu pull "ipns://$(IPNS_KEY__PLAYER_SCORES)" --as player-scores && \
 		kamu pull "ipns://$(IPNS_KEY__PLAYER_SCORES_TOTAL)" --as player-scores-total
