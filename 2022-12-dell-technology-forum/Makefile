@@ -74,6 +74,12 @@ init-frontend:
 		kamu pull "ipns://$(IPNS_KEY__PLAYER_SCORES_TOTAL)" --as player-scores-total
 
 
+dashboard-loop:
+	@cd frontend && python -m dashboard
+
+dashboard-loop-podman:
+	@cd frontend && python -m dashboard --container-runtime podman
+
 #########################################################################################
 # Misc
 #########################################################################################
@@ -82,6 +88,7 @@ clean-kamu:
 	rm -rf share
 	rm -rf ingest/.kamu
 	rm -rf frontend/.kamu
+	rm -rf frontend/output/
 
 
 clean-ipfs:

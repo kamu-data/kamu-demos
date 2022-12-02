@@ -83,6 +83,27 @@ kamu notebook
 Pick and execute individual notebooks.
 
 
+### Dashboard
+This demo has a continuously refreshing dashboard.
+
+Dashboard is produced by rendering the `frontend/dashboard.ipynb` notebook into HTML.
+
+The rendering process uses `nbconvert` and has to execute from under `kamu notebook` environment.
+
+To simplify things you can:
+```bash
+# Run the notebook environment
+kamu notebook
+
+# In a different terminal run
+make dashboard-loop
+```
+
+The `dashboard-loop` process will continuously monitor the state of datasets in the `frontend` workspace and re-render the dashboard when it detects changes.
+
+You can then open `frontend/output/dashboard.html` in a browser. A built-in refresh timer will reload the page periodically.
+
+
 ### Cleaning up
 To clean the whole workspace up you can run:
 ```bash
