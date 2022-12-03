@@ -14,7 +14,10 @@ content:
         query: |
           select
             `event_time`,
+            `online_id`,
             `name`,
+            `platform_kind`,
+            `platform_value`,
             sum(`score`) over (partition by `name` order by `event_time` asc) AS `score_total`,
             max(`score`) over (partition by `name` order by `event_time` asc) AS `score_top`,
             sum(`goals`) over (partition by `name` order by `event_time` asc) AS `goals_total`,
@@ -26,4 +29,4 @@ content:
             sum(`saves`) over (partition by `name` order by `event_time` asc) AS `saves_total`,
             max(`saves`) over (partition by `name` order by `event_time` asc) AS `saves_top`
           from `player-scores`
-          where `is_bot` = 0
+          where not `is_bot`

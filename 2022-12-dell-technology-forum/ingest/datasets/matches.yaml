@@ -14,9 +14,8 @@ content:
       prepare:
         - kind: pipe
           command:
-            - "rattletrap/rattletrap"
-            - "-c"
-            - "--skip-crc"
+            - "rrrocket/rrrocket"
+            - "-n"
         - kind: pipe
           command:
             - "jq"
@@ -39,7 +38,7 @@ content:
                   replay_json,
                   get_json_object(
                       replay_json,
-                      '$.header.body.properties.value'
+                      '$.properties'
                   ) as header_json
               from input
           ),
@@ -49,22 +48,22 @@ content:
                   replay_json,
                   from_json(header_json, '
                       struct<
-                          Id:struct<value:struct<str:string>>,
-                          Date:struct<value:struct<str:string>>,
-                          MapName:struct<value:struct<name:string>>,
-                          TeamSize:struct<value:struct<int:integer>>,
-                          UnfairTeamSize:struct<value:struct<int:integer>>
+                          Id:string,
+                          Date:string,
+                          MapName:string,
+                          TeamSize:integer,
+                          UnfairTeamSize:integer
                       >
                   ') as header
               from header_json
           )
                           
           select
-              cast(unix_timestamp(header.Date.value.str, "yyyy-MM-dd HH-mm-ss") as timestamp) as event_time,
-              header.Id.value.str as match_id,
-              header.MapName.value.name as map_name,
-              header.TeamSize.value.int as team_size,
-              header.UnfairTeamSize.value.int as unfair_team_size,
+              cast(unix_timestamp(header.Date, "yyyy-MM-dd HH-mm-ss") as timestamp) as event_time,
+              header.Id as match_id,
+              header.MapName as map_name,
+              header.TeamSize as team_size,
+              header.UnfairTeamSize as unfair_team_size,
               replay_json
           from header_raw
       merge:

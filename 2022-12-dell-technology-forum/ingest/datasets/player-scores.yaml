@@ -14,45 +14,48 @@ content:
         query: |
           with
 
-          player_stats_json as (
-              select
-                  event_time,
-                  match_id,
-                  get_json_object(
-                      replay_json, 
-                      '$.header.body.properties.value.PlayerStats.value.array'
-                  ) as ps_json 
-              from matches
-          ),
-
           player_stats_raw as (
               select
                   event_time,
                   match_id,
-                  explode(from_json(ps_json, '
-                      array<struct<value:struct<
-                          Name:struct<value:struct<str:string>>,
-                          Team:struct<value:struct<int:integer>>,
-                          bBot:struct<value:struct<bool:integer>>,
-                          Score:struct<value:struct<int:integer>>,
-                          Goals:struct<value:struct<int:integer>>,
-                          Assists:struct<value:struct<int:integer>>,
-                          Shots:struct<value:struct<int:integer>>,
-                          Saves:struct<value:struct<int:integer>>
-                      >>>
-                  ')) as stats
-              from player_stats_json
+                  explode(
+                    from_json(
+                        get_json_object(
+                            replay_json,
+                            '$.properties.PlayerStats'
+                        ),
+                        'array<struct<
+                            OnlineID:string,
+                            Name:string,
+                            Platform:struct<
+                                kind:string,
+                                value:string
+                            >,
+                            Team:integer,
+                            bBot:boolean,
+                            Score:integer,
+                            Goals:integer,
+                            Assists:integer,
+                            Shots:integer,
+                            Saves:integer
+                        >>'
+                    )
+                ) as stats
+              from matches
           )
 
           select
               event_time,
               match_id,
-              stats.value.name.value.str as name,
-              stats.value.team.value.int as team,
-              stats.value.bBot.value.bool as is_bot,
-              stats.value.score.value.int as score,
-              stats.value.goals.value.int as goals,
-              stats.value.assists.value.int as assists,
-              stats.value.shots.value.int as shots,
-              stats.value.saves.value.int as saves
+              stats.onlineid as online_id,
+              stats.platform.kind as platform_kind,
+              stats.platform.value as platform_value,
+              stats.name as name,
+              stats.team as team,
+              stats.bBot as is_bot,
+              stats.score as score,
+              stats.goals as goals,
+              stats.assists as assists,
+              stats.shots as shots,
+              stats.saves as saves
           from player_stats_raw
