@@ -57,6 +57,7 @@ init-frontend-lfs:
 	@cd frontend && \
 		rm -rf .kamu && \
 		kamu init && \
+		kamu config set frontend.jupyter.image "$(IMAGE_JUPYTER)" && \
 		kamu repo add share "$(LFS_SHARE_DIR)" && \
 		kamu pull share/matches && \
 		kamu pull share/player-scores && \
