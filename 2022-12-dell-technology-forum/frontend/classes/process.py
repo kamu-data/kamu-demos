@@ -181,7 +181,7 @@ class Visualize:
         return heat_map
 
     def vis(self,car_histories,scores,teamord,player_ids):
-        fig, axs = plt.subplot_mosaic("BBCC;BBCC;BBCC")
+        fig, axs = plt.subplot_mosaic("BBBCCC;BBBCCC;BBBCCC")
 
         heat = self.heatmap(car_histories,player_ids)
 
@@ -200,14 +200,23 @@ class Visualize:
         heat_map = heatmap / np.max(heatmap)
         heat_map = np.vectorize(lambda x: x ** 0.5)(heat_map)
 
-        axs["C"].pcolormesh(xi, yi, zi.reshape(xi.shape), shading="gouraud", cmap="magma")
+        poti = axs["C"].pcolormesh(xi, yi, zi.reshape(xi.shape), shading="gouraud", cmap="magma")
         # plt.show()
 
-        axs["B"].pcolor(xi, yi, heat_map, cmap='seismic')
-        axs["B"].set_xlabel(teamord[0])
+        pot = axs["B"].pcolor(xi, yi, heat_map, cmap='seismic')
+        fig.colorbar(pot)
+        axs["B"].set_xlabel("X dimension in cm")
+        axs["B"].set_ylabel("Y dimension in cm")
+        axs["B"].title.set_text("Raw dens of loc")
 
         extent = axs["C"].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
         fig.savefig("heatmap.png", bbox_inches=extent, dpi=600)
+
+        axs["C"].set_xlabel("X dimension in cm")
+        axs["C"].set_ylabel("Y dimension in cm")
+        axs["C"].title.set_text("GB dens of loc")
+        axs["C"].axis("off")
+        fig.colorbar(poti)
 
         plt.tight_layout()
         plt.show()
