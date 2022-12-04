@@ -128,10 +128,10 @@ def replay_id_staged(staged_path):
 
 def replay_header(replay_path):
     return json.loads(subprocess.check_output([
-        "rattletrap/rattletrap",
-        "-f",
-        "-i", replay_path,
-        "-c",
+        "rrrocket/rrrocket",
+        "-n",
+         replay_path,
+
     ]))
 
 def replay_timestamp(header):

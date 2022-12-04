@@ -34,89 +34,93 @@ class PreProcess:
             self.teamord[i] = []
         # this first loop gathers the player names into a dict, and makes a dict for the ids of each player(see below)
         for index, names in enumerate(
-                replay.header.data["body"]["properties"]["value"]["PlayerStats"]["value"]["array"]):
-            if names["value"]["Name"]["value"]["str"] == self.vip:
+                replay["properties"]["PlayerStats"]):
+            if names["Name"] == self.vip:
                 self.k = index
-                self.teamnr = names["value"]["Team"]["value"]["int"]
-                self.teamord[0] = str(names["value"]["Name"]["value"]["str"])
+                self.teamnr = names["Team"]
+                self.teamord[0] = str(names["Name"])
         for index, names in enumerate(
-                replay.header.data["body"]["properties"]["value"]["PlayerStats"]["value"]["array"]):
+                replay["properties"]["PlayerStats"]):
             self.player_ids[index] = []
 
             self.player_nam[index] = []
 
-            if names["value"]["Team"]["value"]["int"] == self.teamnr and self.k != index:
-                self.teamord[io] = str(names["value"]["Name"]["value"]["str"])
+            if names["Team"] == self.teamnr and self.k != index:
+                self.teamord[io] = str(names["Name"])
                 #             print(str(names["value"]["Name"]["value"]["str"]))
                 io += 1
             else:
                 if self.k != index:
-                    self.teamord[jo] = str(names["value"]["Name"]["value"]["str"])
+                    self.teamord[jo] = str(names["Name"])
                     #                 print(str(names["value"]["Name"]["value"]["str"]))
                     jo += 1
 
         #     print(teamord)
         self.player_ids[6] = []
         self.player_nam[6] = []
+        print(self.player_ids)
         # the extracted json uses "frames" to denote new information. not sure if a frame is made every x ms, or made when new info is needed
-        for frame in replay.content.data["body"]["frames"][:]:
-            for replication in frame["replications"]:
-                # every frame has an actor id; data tied to that actor id. can be a car, ball, boost pads etc..
-                actor_id = replication["actor_id"]["value"]
-                # frames have spawned and update types. both can be in a single frame.
-                if "spawned" in replication["value"]:
+        for frame in replay["network_frames"]["frames"][:]:
+            if len(frame["new_actors"]) > 0:
+
+                for replication in frame["new_actors"]:
+                    # every frame has an actor id; data tied to that actor id. can be a car, ball, boost pads etc..
+                    actor_id = replication["actor_id"]
+                    # frames have spawned and update types. both can be in a single frame.
+
                     if actor_id not in actor_positions:
                         # find a frame for which the spawn tag is for a car
-                        if replication["value"]["spawned"]["object_name"] == "Archetypes.Car.Car_Default":
+                        if replay["objects"][replication["object_id"]] == "Archetypes.Car.Car_Default":
                             # initiate a empty array for the corresponding actor id.
                             actor_positions[actor_id] = []
                         try:
-                            loc = replication["value"]["spawned"]["initialization"]["location"]
+                            loc = replication["initial_trajectory"]["location"]
                             actor_positions[actor_id].append({"time": frame["time"], "x": loc["x"], "y": loc["y"]})
                         except:
                             pass
 
-                        if replication["value"]["spawned"]["object_name"] == "Archetypes.Ball.Ball_Default":
+                        if replay["objects"][replication["object_id"]] == "Archetypes.Ball.Ball_Default":
                             actor_positions[actor_id] = []
                             actor_boosts[actor_id] = []
                             self.player_ids[6].append(actor_id)
-                if "updated" in replication["value"]:
-                    for update in replication["value"]["updated"]:
+            if len(frame["updated_actors"]) > 0:
+                for replication in frame["updated_actors"]:
+                    actor_id = replication["actor_id"]
                         # sometimes, new actor ids are spawned for the same player, here we find a frame with that info
                         # and then put all actor ids of each specific player into their corresponding array.
 
-                        if update["name"] == "Engine.Pawn:PlayerReplicationInfo":
-                            if update["value"]["flagged_int"]["int"] not in self.player_int:
-                                # get the player identifier. this is different than an actor id.
-                                self.player_int.append(update["value"]["flagged_int"]["int"])
-                            # here we use the array generated at the top to store the multiple "car ids" of each player
+                    if replay["objects"][replication["object_id"]] == "Engine.Pawn:PlayerReplicationInfo":
+                        if replication["attribute"]["ActiveActor"]["actor"] not in self.player_int:
+                            # get the player identifier. this is different than an actor id.
+                            self.player_int.append(replication["attribute"]["ActiveActor"]["actor"])
+                        # here we use the array generated at the top to store the multiple "car ids" of each player
 
-                        # finally, find the xyz data and add that to a dict for each "car id".
-                        # the list we just made above is used later in the code to connect all the xyz data for each player together
-                        if update["name"] == "TAGame.RBActor_TA:ReplicatedRBState" and actor_id in actor_positions:
-                            rigid_body_location = update["value"]["rigid_body_state"]["location"]
+                    # finally, find the xyz data and add that to a dict for each "car id".
+                    # the list we just made above is used later in the code to connect all the xyz data for each player together
+                    if replay["objects"][replication["object_id"]] == "TAGame.RBActor_TA:ReplicatedRBState" and actor_id in actor_positions:
+                        rigid_body_location = replication["attribute"]["RigidBody"]["location"]
 
-                            # append to name positions
+                        # append to name positions
 
-                            actor_positions[actor_id].append(
-                                {"time": frame["time"], "x": (rigid_body_location["x"] / 100),
-                                 "y": (rigid_body_location["y"] / 100)})
-        for frame in replay.content.data["body"]["frames"][:]:
-            for replication in frame["replications"]:
-                actor_id = replication["actor_id"]["value"]
-                if "updated" in replication["value"]:
-                    for update in replication["value"]["updated"]:
-                        if update["name"] == "Engine.PlayerReplicationInfo:PlayerName":
-                            for op in range(len(self.player_int)):
-                                if actor_id == self.player_int[op]:
-                                    self.player_nam[op] = update["value"]["string"]
-                        if update["name"] == "Engine.Pawn:PlayerReplicationInfo":
-                            for op in range(len(self.player_int)):
-                                if update["value"]["flagged_int"]["int"] == self.player_int[op] and actor_id not in \
-                                        self.player_ids[
-                                            op]:
-                                    self.player_ids[op].append(actor_id)
+                        actor_positions[actor_id].append(
+                            {"time": frame["time"], "x": (rigid_body_location["x"]),
+                             "y": (rigid_body_location["y"])})
+        for frame in replay["network_frames"]["frames"][:]:
+            if len(frame["updated_actors"]) > 0:
+                for replication in frame["updated_actors"]:
+                    actor_id = replication["actor_id"]
 
+                    if replay["objects"][replication["object_id"]] == "Engine.PlayerReplicationInfo:PlayerName":
+                        for op in range(len(self.player_int)):
+                            if actor_id == self.player_int[op]:
+                                self.player_nam[op] = replication["attribute"]["String"]
+                    if replay["objects"][replication["object_id"]] == "Engine.Pawn:PlayerReplicationInfo":
+                        for op in range(len(self.player_int)):
+                            if replication["attribute"]["ActiveActor"]["actor"] == self.player_int[op] and actor_id not in \
+                                    self.player_ids[
+                                        op]:
+                                self.player_ids[op].append(actor_id)
+        # print(actor_positions)
         return actor_positions, actor_boosts
 
     def car_positions_to_histories(self,positions: dict) -> List['dict']:
@@ -213,8 +217,13 @@ class Visualize:
 class Video:
     from matplotlib import pyplot as plt
 
-    def __init__(self):
-        pass
+    def __init__(self, car_histories,player_nam,teamord,player_ids,vip):
+        self.car_histories = car_histories
+        self.player_nam = player_nam
+        self.teamord = teamord
+        self.player_ids = player_ids
+        self.vip = vip
+
 
     def init(self):
         for line in lines:
@@ -222,12 +231,12 @@ class Video:
                 line.set_data([], [])
         return lines
 
-    def update(self,frame,car_histories):
+    def update(self,frame):
         global fps,speedup,lines
         t_trail = 2
         t_end = float(frame) / fps * speedup
         t_start = t_end - t_trail
-        xxx, yyy = self.grapher(car_histories, t_start, t_end)
+        xxx, yyy = self.grapher(self.car_histories, t_start, t_end)
 
         for lnum, line in enumerate(lines):
             if lnum != 0:
@@ -239,6 +248,8 @@ class Video:
         index11 = 0
         xs = {}
         ys = {}
+
+
 
         for a in range(len(player_nam)):
             xs[a] = []
@@ -270,7 +281,10 @@ class Video:
 
         return xs, ys
 
-    def vis(self, car_histories):
+    def vis(self):
+
+
+
         plt.xlim(-8000, 8000)
         plt.ylim(-8000, 8000)
         plt.autoscale()
