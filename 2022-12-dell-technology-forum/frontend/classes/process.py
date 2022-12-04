@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 from scipy.stats import gaussian_kde as kde
 
-from rattletrap import Replay
 from typing import List
 import pandas as pd
 
@@ -26,7 +25,7 @@ class PreProcess:
         self.player_int = []
 
 
-    def get_paths(self,replay: Replay):
+    def get_paths(self,replay):
         actor_positions, actor_boosts = {}, {}
         io = 1
         jo = 3
@@ -58,7 +57,7 @@ class PreProcess:
         #     print(teamord)
         self.player_ids[6] = []
         self.player_nam[6] = []
-        print(self.player_ids)
+        # print(self.player_ids)
         # the extracted json uses "frames" to denote new information. not sure if a frame is made every x ms, or made when new info is needed
         for frame in replay["network_frames"]["frames"][:]:
             if len(frame["new_actors"]) > 0:
@@ -150,7 +149,7 @@ class PreProcess:
         return history_plots
 
     def get_var(self):
-        return self.teamord, self.player_ids
+        return self.teamord, self.player_ids,self.player_nam,self.teamnr,self.vip
 
 
 class Visualize:
@@ -217,32 +216,36 @@ class Visualize:
 class Video:
     from matplotlib import pyplot as plt
 
-    def __init__(self, car_histories,player_nam,teamord,player_ids,vip):
+    def __init__(self, car_histories,player_nam,teamord,player_ids,vip,teamnr):
         self.car_histories = car_histories
         self.player_nam = player_nam
         self.teamord = teamord
         self.player_ids = player_ids
         self.vip = vip
+        self.teamnr = teamnr
+        self.fps = 0
+        self.speedup = 0
+        self.lines = []
 
 
     def init(self):
-        for line in lines:
-            if line is not lines[0]:
+        for line in self.lines:
+            if line is not self.lines[0]:
                 line.set_data([], [])
-        return lines
+        return self.lines
 
     def update(self,frame):
-        global fps,speedup,lines
+
         t_trail = 2
-        t_end = float(frame) / fps * speedup
+        t_end = float(frame) / self.fps * self.speedup
         t_start = t_end - t_trail
         xxx, yyy = self.grapher(self.car_histories, t_start, t_end)
 
-        for lnum, line in enumerate(lines):
+        for lnum, line in enumerate(self.lines):
             if lnum != 0:
                 line.set_data(xxx[lnum - 1], yyy[lnum - 1])
 
-        return lines
+        return self.lines
 
     def grapher(self,histories: List['dict'], start, end):
         index11 = 0
@@ -251,21 +254,21 @@ class Video:
 
 
 
-        for a in range(len(player_nam)):
+        for a in range(len(self.player_nam)):
             xs[a] = []
             ys[a] = []
-        for k in range(len(player_nam)):
+        for k in range(len(self.player_nam)):
 
-            if vip == player_nam[k]:
+            if self.vip == self.player_nam[k]:
                 index11 = k
 
         indexx = 0
-        for l in range(len(player_nam)):
+        for l in range(len(self.player_nam)):
             if index11 != l:
                 #             if l == 6:
                 indexx += 1
                 for index3, history in enumerate(histories):
-                    if history["actor_id"] in player_ids[l]:
+                    if history["actor_id"] in self.player_ids[l]:
                         for px, py, timeg in zip(history["xs"], history["ys"], history["times"]):
                             if start < timeg < end:
                                 xs[indexx].append((px * -1))
@@ -273,7 +276,7 @@ class Video:
 
             else:
                 for index3, history in enumerate(histories):
-                    if history["actor_id"] in player_ids[l]:
+                    if history["actor_id"] in self.player_ids[l]:
                         for px, py, timeg in zip(history["xs"], history["ys"], history["times"]):
                             if start < timeg < end:
                                 xs[0].append((px * -1))
@@ -282,9 +285,6 @@ class Video:
         return xs, ys
 
     def vis(self):
-
-
-
         plt.xlim(-8000, 8000)
         plt.ylim(-8000, 8000)
         plt.autoscale()
@@ -292,13 +292,12 @@ class Video:
 
         fig, axs = plt.subplot_mosaic("A")
 
-        img = plt.imread("../resources/simple-pitch.png")
+        img = plt.imread("resources/simple-pitch.png")
 
         xxx = []
         yyy = []
         ln, = axs["A"].plot(xxx, yyy)
 
-        lines = []
 
         for o in range(8):
             if o == 0:
@@ -306,31 +305,34 @@ class Video:
             elif o == 1:
                 lobj, = axs["A"].plot([], [], color="green")
             else:
-                if teamnr == 0:
-                    if player_nam[o - 1] == teamord[1] or player_nam[o - 1] == teamord[2]:
+                if self.teamnr == 0:
+                    if self.player_nam[o - 1] == self.teamord[1] or self.player_nam[o - 1] == self.teamord[2]:
                         lobj = axs["A"].plot([], [], color="purple")[0]
                     elif o < 7:
                         lobj = axs["A"].plot([], [], color="red")[0]
                     else:
                         lobj = axs["A"].plot([], [], color="black")[0]
                 else:
-                    if player_nam[o - 1] == teamord[1] or player_nam[o - 1] == teamord[2]:
+                    if self.player_nam[o - 1] == self.teamord[1] or self.player_nam[o - 1] == self.teamord[2]:
                         lobj = axs["A"].plot([], [], color="red")[0]
                     elif o < 7:
                         lobj = axs["A"].plot([], [], color="purple")[0]
                     else:
                         lobj = axs["A"].plot([], [], color="black")[0]
-            lines.append(lobj)
+            self.lines.append(lobj)
 
-        match_duration = int(max([ch['times'].max() for ch in car_histories]))
+        match_duration = int(max([ch['times'].max() for ch in self.car_histories]))
         speedup = 300.0 / 50
         clip_duration = match_duration / speedup
         fps = 12
         frames = int(clip_duration * fps)
 
+        self.fps = fps
+        self.speedup =speedup
+
         print(f"Rendering {match_duration} s match as {clip_duration} s clip ({speedup} X speed) of {frames} frames")
         start = time.time()
-        anim = FuncAnimation(fig, self.update, init_func=self.init, frames=50, interval=1000.0 / fps, blit=True)
+        anim = FuncAnimation(fig, self.update, init_func=self.init, frames=frames, interval=1000.0 / fps, blit=True)
 
 
         video = anim.to_html5_video()
