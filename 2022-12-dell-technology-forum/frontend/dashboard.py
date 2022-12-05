@@ -103,11 +103,16 @@ if __name__ == "__main__":
     parser.add_argument('--jupyter-container-name', default="kamu-jupyter", help="Name of the container where Jupyter is running")
     parser.add_argument('--loop-delay', type=float, default=1.0, help="Delay between directory scans")
     parser.add_argument('--output-dir', default="output", help="Output directory")
+    parser.add_argument('--once', action="store_true", help="Render once and exit")
 
     args = parser.parse_args()
 
     try:
-        main(args)
+        if not args.once:
+            main(args)
+        else:
+            test_jupyter_running(args)
+            render_dashboard(args)
     except KeyboardInterrupt:
         logger.info("Aborting")
         pass

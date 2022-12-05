@@ -77,9 +77,13 @@ init-frontend:
 
 dashboard-loop:
 	@cd frontend && python -m dashboard
-
 dashboard-loop-podman:
 	@cd frontend && python -m dashboard --container-runtime podman
+
+dashboard-render:
+	@cd frontend && python -m dashboard --once
+dashboard-render-podman:
+	@cd frontend && python -m dashboard --once --container-runtime podman
 
 #########################################################################################
 # Misc

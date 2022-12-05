@@ -221,6 +221,44 @@ class Visualize:
         plt.tight_layout()
         plt.show()
         plt.close()
+    
+    def pcolormesh(self,car_histories,scores,teamord,player_ids):
+        heat = self.heatmap(car_histories,player_ids)
+        
+        posx = np.array(heat[0])
+        posy = np.array(heat[1])
+        k = kde((posx, posy))
+        pmin = -6000
+        pmax = 6000
+        step = 80
+        offset = int(((pmax - pmin) / step) / 2)
+        xi, yi = np.mgrid[pmin:pmax:step, pmin:pmax:step]
+        zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+
+        heatmap = self.history_to_heat_map(car_histories,player_ids,xi,step,offset)
+        heat_map = heatmap / np.max(heatmap)
+        heat_map = np.vectorize(lambda x: x ** 0.5)(heat_map)
+
+        return plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading="gouraud", cmap="magma")
+    
+    def pcolor(self,car_histories,scores,teamord,player_ids):
+        heat = self.heatmap(car_histories,player_ids)
+
+        posx = np.array(heat[0])
+        posy = np.array(heat[1])
+        k = kde((posx, posy))
+        pmin = -6000
+        pmax = 6000
+        step = 80
+        offset = int(((pmax - pmin) / step) / 2)
+        xi, yi = np.mgrid[pmin:pmax:step, pmin:pmax:step]
+        zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+
+        heatmap = self.history_to_heat_map(car_histories,player_ids,xi,step,offset)
+        heat_map = heatmap / np.max(heatmap)
+        heat_map = np.vectorize(lambda x: x ** 0.5)(heat_map)
+        
+        return plt.pcolor(xi, yi, heat_map, cmap='seismic')
 
 class Video:
     from matplotlib import pyplot as plt
@@ -293,61 +331,67 @@ class Video:
 
         return xs, ys
 
-    def vis(self):
+    def render(self, speedup=6.0, max_duration=None, fps=12, width_inches=3.0):
         plt.xlim(-8000, 8000)
         plt.ylim(-8000, 8000)
         plt.autoscale()
         plt.axis("off")
 
-        fig, axs = plt.subplot_mosaic("A")
-
         img = plt.imread("resources/simple-pitch.png")
+
+        fig = plt.figure(figsize=(width_inches, width_inches * img.shape[0] / img.shape[1]))
+        ax = fig.add_subplot()
+        ax.axis("off")
 
         xxx = []
         yyy = []
-        ln, = axs["A"].plot(xxx, yyy)
+        ln, = ax.plot(xxx, yyy)
 
 
         for o in range(8):
             if o == 0:
-                lobj = axs["A"].imshow(img, extent=[-4100, 4100, -6000, 6000])
+                lobj = ax.imshow(img, extent=[-4100, 4100, -6000, 6000])
             elif o == 1:
-                lobj, = axs["A"].plot([], [], color="green")
+                lobj, = ax.plot([], [], color="green")
             else:
                 if self.teamnr == 0:
                     if self.player_nam[o - 1] == self.teamord[1] or self.player_nam[o - 1] == self.teamord[2]:
-                        lobj = axs["A"].plot([], [], color="purple")[0]
+                        lobj = ax.plot([], [], color="purple")[0]
                     elif o < 7:
-                        lobj = axs["A"].plot([], [], color="red")[0]
+                        lobj = ax.plot([], [], color="red")[0]
                     else:
-                        lobj = axs["A"].plot([], [], color="black")[0]
+                        lobj = ax.plot([], [], color="black")[0]
                 else:
                     if self.player_nam[o - 1] == self.teamord[1] or self.player_nam[o - 1] == self.teamord[2]:
-                        lobj = axs["A"].plot([], [], color="red")[0]
+                        lobj = ax.plot([], [], color="red")[0]
                     elif o < 7:
-                        lobj = axs["A"].plot([], [], color="purple")[0]
+                        lobj = ax.plot([], [], color="purple")[0]
                     else:
-                        lobj = axs["A"].plot([], [], color="black")[0]
+                        lobj = ax.plot([], [], color="black")[0]
             self.lines.append(lobj)
 
         match_duration = int(max([ch['times'].max() for ch in self.car_histories]))
-        speedup = 300.0 / 50
         clip_duration = match_duration / speedup
-        fps = 12
+        if max_duration is not None and max_duration < clip_duration:
+            clip_duration = max_duration
+            speedup = match_duration / clip_duration 
         frames = int(clip_duration * fps)
 
         self.fps = fps
         self.speedup =speedup
 
-        print(f"Rendering {match_duration} s match as {clip_duration} s clip ({speedup} X speed) of {frames} frames")
+        #print(f"Rendering {match_duration} s match as {clip_duration} s clip ({speedup} X speed) of {frames} frames")
         start = time.time()
         anim = FuncAnimation(fig, self.update, init_func=self.init, frames=frames, interval=1000.0 / fps, blit=True)
 
 
         video = anim.to_html5_video()
-        print(f"Rendering took {time.time() - start} s")
+        #print(f"Rendering took {time.time() - start} s")
+        plt.close()
+        return video
+
+    def vis(self, **kwargs):
+        video = self.render(**kwargs)
         html = display.HTML(video)
         display.display(html)
         plt.close()
-
-
