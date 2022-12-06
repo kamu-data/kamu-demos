@@ -29,7 +29,8 @@ Data flow:
 
 ## Prerequisites
 1. Install `kamu` ([instructions](https://docs.kamu.dev/cli/get-started/installation/))
-2. (Optional) Install `ipfs` daemon
+2. (Optional) Install `ipfs` daemon ([instructions](https://docs.ipfs.tech/install/command-line/#official-distributions))
+   1. Make sure your `ipfs` daemon is running and `ipfs swarm peers` command succeeds
 
 
 ## Using the Demo
