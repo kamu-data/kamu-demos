@@ -1,6 +1,6 @@
 # Dell Technologies Forum 2022 Demo
 
-![DTF2022](readme/dtf-logo.jpg)
+<img src="readme/dtf-logo.jpg" width=400/>
 
 This demo was created in collaboration with:
 - University of Twente (ESportsLab)
@@ -12,18 +12,18 @@ It was presented on Dell Technologies Forum in the Netherlands on December 6, 20
 <table>
 <tr>
 <td>
-<img src="readme/IMG_20221206_122742.jpg" width=300/>
+<img src="readme/IMG_20221206_122742.jpg" width=350/>
 </td>
 <td>
-<img src="readme/1670444391985.jpeg" width=300/>
+<img src="readme/1670444391985.jpeg" width=350/>
 </td>
 </tr>
 <tr>
 <td>
-<img src="readme/IMG_20221206_163205.jpg" width=300/>
+<img src="readme/IMG_20221206_163205.jpg" width=350/>
 </td>
 <td>
-<img src="readme/IMG-20221206-WA0011.jpg" width=300/>
+<img src="readme/IMG-20221206-WA0011.jpg" width=350/>
 </td>
 </tr>
 </table>
