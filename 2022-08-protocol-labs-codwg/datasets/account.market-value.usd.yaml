@@ -1,0 +1,29 @@
+---
+kind: DatasetSnapshot
+version: 1
+content:
+  name: account.market-value.usd
+  kind: derivative
+  metadata:
+    - kind: setTransform
+      inputs:
+        - name: com.cryptocompare.ohlcv.eth-usd
+        - name: account.balance
+      transform:
+        kind: sql
+        engine: flink
+        temporalTables:
+          - name: account.balance
+            primaryKey:
+              - symbol
+        query: >
+          select
+            eth2usd.event_time,
+            acc.symbol,
+            acc.balance,
+            (acc.balance * eth2usd.`close`) as balance_usd
+          from `com.cryptocompare.ohlcv.eth-usd` as eth2usd,
+          lateral table (`account.balance`(eth2usd.event_time)) as acc
+          where
+            acc.symbol = eth2usd.from_symbol
+            and eth2usd.to_symbol = 'usd'

@@ -1,0 +1,39 @@
+---
+kind: DatasetSnapshot
+version: 1
+content:
+  name: account.balance
+  kind: derivative
+  metadata:
+    - kind: setTransform
+      inputs:
+        - name: account.transactions
+      transform:
+        kind: sql
+        engine: flink
+        queries:
+          - alias: transactions_eth
+            query: >
+              select
+                *,
+                cast(`value` as float) / power(10.0, 18) as value_eth
+              from `account.transactions`
+          - alias: deltas_eth
+            query: >
+              select
+                *,
+                case
+                  when `from` = '0x07ee55aa48bb72dcc6e9d78256648910de513eca' then -value_eth
+                  else value_eth
+                end as amount_eth
+              from transactions_eth
+          - alias: account.balance
+            query: >
+              select
+                block_time,
+                'eth' as symbol,
+                amount_eth as amount,
+                sum(amount_eth) over (order by block_time) as balance
+              from deltas_eth
+    - kind: setVocab
+      eventTimeColumn: block_time
