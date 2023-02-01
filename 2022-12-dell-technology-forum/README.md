@@ -31,7 +31,7 @@ It was presented on Dell Technologies Forum in the Netherlands on December 6, 20
 
 # Demo Structure
 
-![Data Flow](readme/diagram.jpg)
+![Data Flow](readme/diagram.png)
 
 Directories:
 - `/ingest` - datasets and scripts related to adding new data
