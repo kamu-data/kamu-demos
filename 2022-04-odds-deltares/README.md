@@ -6,6 +6,20 @@ This project demonstrates how Kamu pipelines can be used for:
 - Colletcing dynamic data from multiple different sources of raw data into a single dataset
 - Achieving fully reproducible and traceable data science
 
+<table>
+<tr>
+<td>
+<img src="readme/lineage.png" width=350/>
+</td>
+<td>
+<img src="readme/simulation.png" width=350/>
+</td>
+<td>
+<img src="readme/mapbox.png" width=350/>
+</td>
+</tr>
+</table>
+
 ## Getting Started
 
 Fastest way to get started is by getting datasets from S3:
@@ -19,8 +33,11 @@ You can then explore and analyze data using:
 
 ```sh
 kamu ui
-kamu notebook
+kamu notebook --env MAPBOX_ACCESS_TOKEN
 ```
+
+Note that the geographical overlay map in `analyze.ipynb` notebook is using [MapBox](https://www.mapbox.com/). To display it you will need to register and get an access token (it's free), and then export the token as `MAPBOX_ACCESS_TOKEN` environment variable.
+
 
 ## Setting up demo with IPFS
 
