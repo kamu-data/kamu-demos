@@ -1,0 +1,87 @@
+---
+kind: DatasetSnapshot
+version: 1
+content:
+  name: rhine-basin.netherlands
+  kind: derivative
+  metadata:
+    - kind: setTransform
+      inputs:
+        - name: measurements.boven-rijn
+        - name: measurements.ijssel
+        - name: measurements.lek
+        - name: measurements.nederrijn
+        - name: measurements.pannerdensch-kanaal
+        - name: measurements.waal
+      transform:
+        kind: sql
+        engine: spark
+        query: >
+          select
+            event_time,
+            station_id,
+            waterlevel,
+            velocity,
+            discharge
+          from `measurements.boven-rijn`
+          union all
+          select
+            event_time,
+            station_id,
+            waterlevel,
+            velocity,
+            discharge
+          from `measurements.ijssel`
+          union all
+          select
+            event_time,
+            station_id,
+            waterlevel,
+            velocity,
+            discharge
+          from `measurements.lek`
+          union all
+          select
+            event_time,
+            station_id,
+            waterlevel,
+            velocity,
+            discharge
+          from `measurements.nederrijn`
+          union all
+          select
+            event_time,
+            station_id,
+            waterlevel,
+            velocity,
+            discharge
+          from `measurements.pannerdensch-kanaal`
+          union all
+          select
+            event_time,
+            station_id,
+            waterlevel,
+            velocity,
+            discharge
+          from `measurements.waal`
+    - kind: setInfo
+      description: Combined water station measurements from Rhine's distributaries in Netherlands
+      keywords:
+        - Waterlevel
+        - Discharge
+        - Velocity
+        - Netherlands
+        - Rhine
+    - kind: setAttachments
+      attachments:
+        kind: embedded
+        items:
+          - path: README.md
+            content: |
+              # Combined water station measurements from Rhine's distributaries in Netherlands
+
+              This dataset is a union of multiple datasets
+    - kind: setLicense
+      shortName: OGL-Netherlands
+      name: Open Government Licence - Netherlands
+      websiteUrl: https://www.cbs.nl/en-gb/onze-diensten/open-data

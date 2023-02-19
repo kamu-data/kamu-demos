@@ -1,0 +1,53 @@
+kind: DatasetSnapshot
+version: 1
+content:
+  name: stations
+  kind: root
+  metadata:
+    - kind: setPollingSource
+      fetch:
+        kind: filesGlob
+        path: data/raw/maps1d_fews_riv_rijn_km_202001010700.nc
+        eventTime:
+          kind: fromPath
+          pattern: maps1d_fews_riv_rijn_km_(\d+)\.nc
+          timestampFormat: "%Y%m%d%H%M"
+        cache:
+          kind: forever
+      prepare:
+        - kind: pipe
+          command:
+            - python
+            - utils/netcdf_stations.py
+      read:
+        kind: csv
+        header: false
+        schema:
+          - "station_id STRING"
+          - "station_name STRING"
+          - "lat FLOAT"
+          - "lon FLOAT"
+      merge:
+        kind: snapshot
+        primaryKey:
+          - station_id
+    - kind: setInfo
+      description: Water measurement station locations and parameters
+      keywords:
+        - Waterinfo
+        - Stations
+        - Netherlands
+        - Rhine
+    - kind: setAttachments
+      attachments:
+        kind: embedded
+        items:
+          - path: README.md
+            content: |
+              # Water measurement station locations and parameters
+
+              Contains water station information sourced from https://waterinfo.rws.nl/
+    - kind: setLicense
+      shortName: OGL-Netherlands
+      name: Open Government Licence - Netherlands
+      websiteUrl: https://www.cbs.nl/en-gb/onze-diensten/open-data

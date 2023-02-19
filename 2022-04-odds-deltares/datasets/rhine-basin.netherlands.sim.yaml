@@ -1,0 +1,45 @@
+kind: DatasetSnapshot
+version: 1
+content:
+  name: rhine-basin.netherlands.sim
+  kind: root
+  metadata:
+    - kind: setPollingSource
+      fetch:
+        kind: filesGlob
+        path: data/prep/rhine.simulations.parquet
+        cache:
+          kind: forever
+      read:
+        kind: parquet
+      merge:
+        kind: ledger
+        primaryKey:
+          - analysis_time
+          - sim_time
+          - station_id
+    - kind: setVocab
+      eventTimeColumn: analysis_time
+    - kind: setInfo
+      description: Predicted water levels of Rhine distributaries produced by Deltares
+      keywords:
+        - Simulation
+        - Prediction
+        - Waterlevel
+        - Discharge
+        - Velocity
+        - Netherlands
+        - Rhine
+    - kind: setAttachments
+      attachments:
+        kind: embedded
+        items:
+          - path: README.md
+            content: |
+              # Predicted water levels of Rhine distributaries produced by Deltares
+
+              Contains simulation results of predicting water levels.
+    - kind: setLicense
+      shortName: OGL-Netherlands
+      name: Open Government Licence - Netherlands
+      websiteUrl: https://www.cbs.nl/en-gb/onze-diensten/open-data

@@ -1,0 +1,40 @@
+kind: DatasetSnapshot
+version: 1
+content:
+  name: measurements.waal
+  kind: root
+  metadata:
+    - kind: setPollingSource
+      fetch:
+        kind: filesGlob
+        path: data/prep/measurements.waal.parquet
+        cache:
+          kind: forever
+      read:
+        kind: parquet
+      merge:
+        kind: ledger
+        primaryKey:
+          - event_time
+          - station_id
+    - kind: setInfo
+      description: Water station measurements from Waal river
+      keywords:
+        - Waterlevel
+        - Discharge
+        - Velocity
+        - Netherlands
+        - Rhine
+    - kind: setAttachments
+      attachments:
+        kind: embedded
+        items:
+          - path: README.md
+            content: |
+              # Water station measurements from Waal river
+
+              Contains water station measurements sourced from https://waterinfo.rws.nl/
+    - kind: setLicense
+      shortName: OGL-Netherlands
+      name: Open Government Licence - Netherlands
+      websiteUrl: https://www.cbs.nl/en-gb/onze-diensten/open-data

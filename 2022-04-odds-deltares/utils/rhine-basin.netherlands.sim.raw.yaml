@@ -1,0 +1,39 @@
+kind: DatasetSnapshot
+version: 1
+content:
+  name: rhine-basin.netherlands.sim.raw
+  kind: root
+  metadata:
+    - kind: setPollingSource
+      fetch:
+        kind: filesGlob
+        path: data/raw/maps1d_fews_riv_rijn_km_*.nc
+        eventTime:
+          kind: fromPath
+          pattern: maps1d_fews_riv_rijn_km_(\d+)\.nc
+          timestampFormat: "%Y%m%d%H%M"
+        cache:
+          kind: forever
+      prepare:
+        - kind: pipe
+          command:
+            - python
+            - netcdf_measurements.py
+      read:
+        kind: csv
+        header: false
+        schema:
+          - "analysis_time TIMESTAMP"
+          - "sim_time TIMESTAMP"
+          - "station_id STRING"
+          - "waterlevel FLOAT"
+          - "velocity FLOAT"
+          - "discharge FLOAT"
+      merge:
+        kind: ledger
+        primaryKey:
+          - analysis_time
+          - sim_time
+          - station_id
+    - kind: setVocab
+      eventTimeColumn: analysis_time

@@ -1,0 +1,3 @@
+# For ingest scripts
+netcdf4
+xarray
