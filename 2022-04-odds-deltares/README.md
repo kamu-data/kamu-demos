@@ -3,7 +3,9 @@
 This demo was created in collaboration with [Deltares](https://www.deltares.nl/en/) - an organization that uses data for flood management. It uses IoT-like data from water level measurement stations located on rivers of the Rhine basin in Netherlands which is collected by [Rijkswaterstaat](https://www.rijkswaterstaat.nl/en) (Ministry of Infrastructure and Water Management of Netherlands).
 
 This project demonstrates how Kamu pipelines can be used for:
-- Colletcing dynamic data from multiple different sources of raw data into a single dataset
+- Colletcing dynamic data from multiple different sources of raw data into a single (verifiable) dataset
+- Harmonizing data from multiple sources (e.g. across agencies of different countries)
+- Creating autonomous data workflows over highly dynamic data
 - Achieving fully reproducible and traceable data science
 
 <table>
