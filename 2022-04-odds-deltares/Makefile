@@ -12,9 +12,28 @@ IPNS_KEY__RHINE_NL=k51qzi5uqu5dlupxrihl3uz6oxtr53qz1c9hp2m3b36t7fej4zbei6hbk3d76
 IPNS_KEY__RHINE_NL_SIM=k51qzi5uqu5di6fm2mbgkukilpwvrpe5idqlyunspfk37campf4woptqxvacy1
 
 
-.PHONY: raw-data
-raw-data:
-	aws s3 cp --recursive "s3://datasets.kamu.dev/demo/deltares/data/" data/
+.PHONY: data-raw
+data-raw:
+	aws s3 cp --recursive "s3://backups.kamu.dev/demos/2022-04-odds-deltares/data/" data/raw/
+
+.PHONY: data-prepared
+data-prepared:
+	aws s3 cp --recursive "s3://backups.kamu.dev/demos/2022-04-odds-deltares/data-prepared/" data/prep/
+
+
+.PHONY: workspace
+workspace:
+	kamu init --multi-tenant
+	cp utils/.kamuconfig .kamu/
+	
+	kamu --account rijkswaterstaat.nl add datasets/measurements.*
+	kamu --account rijkswaterstaat.nl add datasets/stations.*
+	kamu --account rijkswaterstaat.nl pull --all
+	
+	kamu --account deltares.nl add datasets/rhine-basin.*
+	kamu --account deltares.nl pull rhine-basin.netherlands
+	kamu --account deltares.nl pull rhine-basin.netherlands.sim-data
+	kamu --account deltares.nl pull rhine-basin.netherlands.sim
 
 
 .PHONY: init-s3-root

@@ -7,23 +7,29 @@ content:
   metadata:
     - kind: setTransform
       inputs:
-        - name: measurements.boven-rijn
-        - name: measurements.ijssel
-        - name: measurements.lek
-        - name: measurements.nederrijn
-        - name: measurements.pannerdensch-kanaal
-        - name: measurements.waal
+        - datasetRef: rijkswaterstaat.nl/measurements.boven-rijn
+          alias: measurements.boven-rijn
+        - datasetRef: rijkswaterstaat.nl/measurements.ijssel
+          alias: measurements.ijssel
+        - datasetRef: rijkswaterstaat.nl/measurements.lek
+          alias: measurements.lek
+        - datasetRef: rijkswaterstaat.nl/measurements.nederrijn
+          alias: measurements.nederrijn
+        - datasetRef: rijkswaterstaat.nl/measurements.pannerdensch-kanaal
+          alias: measurements.pannerdensch-kanaal
+        - datasetRef: rijkswaterstaat.nl/measurements.waal
+          alias: measurements.waal
       transform:
         kind: sql
-        engine: spark
-        query: >
+        engine: datafusion
+        query: |
           select
             event_time,
             station_id,
             waterlevel,
             velocity,
             discharge
-          from `measurements.boven-rijn`
+          from "measurements.boven-rijn"
           union all
           select
             event_time,
@@ -31,7 +37,7 @@ content:
             waterlevel,
             velocity,
             discharge
-          from `measurements.ijssel`
+          from "measurements.ijssel"
           union all
           select
             event_time,
@@ -39,7 +45,7 @@ content:
             waterlevel,
             velocity,
             discharge
-          from `measurements.lek`
+          from "measurements.lek"
           union all
           select
             event_time,
@@ -47,7 +53,7 @@ content:
             waterlevel,
             velocity,
             discharge
-          from `measurements.nederrijn`
+          from "measurements.nederrijn"
           union all
           select
             event_time,
@@ -55,7 +61,7 @@ content:
             waterlevel,
             velocity,
             discharge
-          from `measurements.pannerdensch-kanaal`
+          from "measurements.pannerdensch-kanaal"
           union all
           select
             event_time,
@@ -63,7 +69,7 @@ content:
             waterlevel,
             velocity,
             discharge
-          from `measurements.waal`
+          from "measurements.waal"
     - kind: setInfo
       description: Combined water station measurements from Rhine's distributaries in Netherlands
       keywords:

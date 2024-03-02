@@ -1,26 +1,23 @@
----
 kind: DatasetSnapshot
 version: 1
 content:
-  name: rhine-basin.netherlands.sim
-  kind: derivative
+  name: rhine-basin.netherlands.sim-data
+  kind: root
   metadata:
-    - kind: setTransform
-      inputs:
-        - datasetRef: rhine-basin.netherlands.sim-data
-        - datasetRef: rhine-basin.netherlands
-      transform:
-        kind: sql
-        engine: datafusion
-        query: |
-          select
-            analysis_time,
-            sim_time,
-            station_id,
-            waterlevel,
-            velocity,
-            discharge
-          from "rhine-basin.netherlands.sim-data"
+    - kind: setPollingSource
+      fetch:
+        kind: filesGlob
+        path: data/prep/rhine.simulations.parquet
+        cache:
+          kind: forever
+      read:
+        kind: parquet
+      merge:
+        kind: ledger
+        primaryKey:
+          - analysis_time
+          - sim_time
+          - station_id
     - kind: setVocab
       eventTimeColumn: analysis_time
     - kind: setInfo

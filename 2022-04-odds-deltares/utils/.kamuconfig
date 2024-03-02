@@ -1,0 +1,18 @@
+kind: CLIConfig
+version: 1
+content:
+  users:
+    allowLoginUnknown: true
+    predefined:
+      - accountId: rijkswaterstaat.nl
+        accountName: rijkswaterstaat.nl
+        accountType: User
+        displayName: rijkswaterstaat.nl
+        avatarUrl: https://www.shutterstock.com/image-vector/royal-exclusive-badge-logo-two-260nw-236025661.jpg
+        isAdmin: false
+      - accountId: deltares.nl
+        accountName: deltares.nl
+        accountType: User
+        displayName: deltares.nl
+        avatarUrl: https://avatars.githubusercontent.com/u/6613768?s=200&v=4
+        isAdmin: false
